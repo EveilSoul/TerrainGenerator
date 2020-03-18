@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Mathematics;
 
 public class TerrainGenerator : MonoBehaviour
 {
@@ -18,43 +19,34 @@ public class TerrainGenerator : MonoBehaviour
 
     [SerializeField] private bool isRandomBorder;
     [SerializeField] private int defaultBorderValue;
-    [SerializeField] private int smoothSteps;
 
-    //[SerializeField] private int topLeftCornerHeight;
-    //[SerializeField] private int bottonLeftCornerHeight;
-    //[SerializeField] private int topRightCornerHeight;
-    //[SerializeField] private int bottonRightCornerHeight;
+    [SerializeField] private int smoothSteps;
+    [SerializeField] private uint seed;
+
+    public static Unity.Mathematics.Random Random;
 
     private float[,] generatedHeights;
 
-
     private void Start()
     {
-        generatedHeights = OldTerrain.terrainData.GetHeights(0,0,width,lenght);
+        Random.InitState(seed);
     }
 
     [ContextMenu("Generate Terrain")]
     void Genarate()
     {
+        Random.InitState(seed);
         lenght = width;
         //var terrain = InstantiateTerrain();
         var terrain = OldTerrain;
         terrain.terrainData = GenerateTerrain(terrain.terrainData);
     }
 
-    [ContextMenu("Smooth Terrain by Average")]
-    void SmoothAvg()
-    {
-        float[,] heights = new float[lenght, width];
-        for (int i = 0; i < lenght; i++)
-            for (int j = 0; j < width; j++)
-                heights[i, j] = generatedHeights[i, j];
 
-        for (int i = 0; i < smoothSteps; i++)
-        {
-            heights = TerrainSmoother.SmoothTerrainAvg(heights, lenght);
-        }
-        OldTerrain.terrainData.SetHeights(0, 0, heights);
+    [ContextMenu("Save terrain for processing")]
+    void Save()
+    {
+        generatedHeights = OldTerrain.terrainData.GetHeights(0, 0, width, lenght);
     }
 
     [ContextMenu("Smooth Terrain by Median")]
@@ -68,6 +60,21 @@ public class TerrainGenerator : MonoBehaviour
         for (int i = 0; i < smoothSteps; i++)
         {
             heights = TerrainSmoother.SmoothTerrainMedian(heights, lenght);
+        }
+        OldTerrain.terrainData.SetHeights(0, 0, heights);
+    }
+
+    [ContextMenu("Smooth Terrain by x=sqrt(x)")]
+    void SmoothSquare()
+    {
+        float[,] heights = new float[lenght, width];
+        for (int i = 0; i < lenght; i++)
+            for (int j = 0; j < width; j++)
+                heights[i, j] = generatedHeights[i, j];
+
+        for (int i = 0; i < smoothSteps; i++)
+        {
+            heights = TerrainSmoother.SquareSmoothing(heights, lenght);
         }
         OldTerrain.terrainData.SetHeights(0, 0, heights);
     }
@@ -94,7 +101,7 @@ public class TerrainGenerator : MonoBehaviour
     private float[,] GenerateMap()
     {
         float[,] heights = new float[lenght, width];
-        //GenerateBorder(heights);
+        GenerateBorder(heights);
         int len = lenght - lenght % 2;
         while (len > 1)
         {
@@ -105,14 +112,13 @@ public class TerrainGenerator : MonoBehaviour
         return heights;
     }
 
-    //private void GenerateBorder(float[,] heights)
-    //{
-    //    heights[0, 0] = GetBorderValue();
-    //    heights[0, height - 1] = GetBorderValue();
-    //    heights[height - 1, 0] = GetBorderValue();
-    //    heights[height - 1, height - 1] = GetBorderValue();
-    //}
-
+    private void GenerateBorder(float[,] heights)
+    {
+        heights[0, 0] = GetBorderValue();
+        heights[0, lenght - 1] = GetBorderValue();
+        heights[lenght - 1, 0] = GetBorderValue();
+        heights[lenght - 1, lenght - 1] = GetBorderValue();
+    }
 
     // Выполнение шага Diamond алгоритма для всей карты
     private void PerformDiamond(int len, float[,] heights)
@@ -160,7 +166,7 @@ public class TerrainGenerator : MonoBehaviour
     private float GetBorderValue()
     {
         if (isRandomBorder)
-            return UnityEngine.Random.Range(0, 1);
+            return Random.NextFloat(0, 1);
         return defaultBorderValue / (float)height;
     }
 
@@ -194,8 +200,8 @@ public class TerrainGenerator : MonoBehaviour
     // Возвращает высоту определенной точки, отталкиваясь от суммы соседних и длины текущего шага
     private void SetHeight(float sum, int len, int posX, int posY, float[,] heights)
     {
-        var result = sum / 4 + UnityEngine.Random.Range(-Roughness * len, Roughness * len);
-        Debug.Log(result);
-        heights[posX, posY] = result;
+        var result = sum / 4 + Random.NextDouble(-Roughness * len, Roughness * len);
+        Debug.Log($"sum: {sum} {result}");
+        heights[posX, posY] = (float)result;
     }
 }

@@ -5,53 +5,6 @@ using UnityEngine;
 
 public class TerrainSmoother
 {
-    public static float[,] SmoothTerrainAvg(float[,] heights, int lenght)
-    {
-        for (int i = 0; i < lenght; i++)
-        {
-            for (int j = 0; j < lenght; j++)
-            {
-                if (i * j != 0 && i != lenght - 1 && j != lenght - 1)
-                {
-                    heights[i, j] = (heights[i, j] + heights[i + 1, j] + heights[i, j + 1] + heights[i - 1, j] + heights[i, j - 1]) / 5;
-                }
-                else if (i == 0 && j == 0)
-                {
-                    heights[i, j] = (heights[i, j] + heights[i + 1, j] + heights[i, j + 1]) / 3;
-                }
-                else if (i == 0 && j != lenght - 1)
-                {
-                    heights[i, j] = (heights[i, j] + heights[i + 1, j] + heights[i, j + 1] + heights[i, j - 1]) / 4;
-                }
-                else if (i == 0 && j == lenght - 1)
-                {
-                    heights[i, j] = (heights[i, j] + heights[i + 1, j] + heights[i, j - 1]) / 3;
-                }
-                else if (j == 0 && i != lenght - 1)
-                {
-                    heights[i, j] = (heights[i, j] + heights[i + 1, j] + heights[i, j + 1] + heights[i - 1, j]) / 4;
-                }
-                else if (j == 0 && i == lenght - 1)
-                {
-                    heights[i, j] = (heights[i, j] + heights[i, j + 1] + heights[i - 1, j]) / 3;
-                }
-                else if (i == lenght - 1 && j == lenght - 1)
-                {
-                    heights[i, j] = (heights[i, j] + heights[i - 1, j] + heights[i, j - 1]) / 3;
-                }
-                else if (i == lenght - 1)
-                {
-                    heights[i, j] = (heights[i, j] + heights[i, j + 1] + heights[i - 1, j] + heights[i, j - 1]) / 4;
-                }
-                else if (j == lenght - 1)
-                {
-                    heights[i, j] = (heights[i, j] + heights[i + 1, j] + heights[i - 1, j] + heights[i, j - 1]) / 4;
-                }
-            }
-        }
-        return heights;
-    }
-
     public static float[,] SmoothTerrainMedian(float[,] heights, int lenght)
     {
         for (int i = 0; i < lenght; i++)
@@ -122,5 +75,13 @@ public class TerrainSmoother
             }
         }
         return array;
+    }
+
+    public static float[,] SquareSmoothing(float[,] heights, int lenght)
+    {
+        for (int i = 0; i < lenght; i++)
+            for (int j = 0; j < lenght; j++)
+                heights[i, j] = Mathf.Sqrt(heights[i, j]);
+        return heights;
     }
 }
