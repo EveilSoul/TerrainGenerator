@@ -77,11 +77,18 @@ public class TerrainSmoother
         return array;
     }
 
-    public static float[,] SquareSmoothing(float[,] heights, int lenght)
+    public static float[,] SqrtSmoothing(float[,] heights, int lenght)
     {
         for (int i = 0; i < lenght; i++)
             for (int j = 0; j < lenght; j++)
                 heights[i, j] = Mathf.Sqrt(heights[i, j]);
+        return heights;
+    }
+    public static float[,] SquareSmoothing(float[,] heights, int lenght)
+    {
+        for (int i = 0; i < lenght; i++)
+            for (int j = 0; j < lenght; j++)
+                heights[i, j] *= heights[i, j];
         return heights;
     }
 }

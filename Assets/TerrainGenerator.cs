@@ -17,20 +17,34 @@ public class TerrainGenerator : MonoBehaviour
 
     private int lenght;
 
-    [SerializeField] private bool isRandomBorder;
-    [SerializeField] private int defaultBorderValue;
-
     [SerializeField] private int smoothSteps;
     [SerializeField] private uint seed;
 
-    public static Unity.Mathematics.Random Random;
+    [SerializeField] private InitedHeightValues InitHeigtValues;
 
+    public static Unity.Mathematics.Random Random;
     private float[,] generatedHeights;
 
-    private void Start()
+    [Serializable]
+    struct InitedHeightValues
     {
-        Random.InitState(seed);
+        public bool GenerateRandomly;
+
+        [Range(0, 1)] [Tooltip("pos [0,0]")]
+        public float LeftTopAngle;
+        [Range(0, 1)] [Tooltip("pos [0,n]")]
+        public float RightTopAngle;
+        [Range(0, 1)] [Tooltip("pos [n,0]")]
+        public float LeftBottomAngle;
+        [Range(0, 1)] [Tooltip("pos [n,n]")]
+        public float RightBottomAngle;
+
+        [Tooltip("may be used for initializing values without border, but if not be used values from other side of terrain")]
+        public bool IsCustomBorder;
+        [Tooltip("from 0 to height")]
+        public float DefaultBorderValue;
     }
+
 
     [ContextMenu("Generate Terrain")]
     void Genarate()
@@ -64,7 +78,22 @@ public class TerrainGenerator : MonoBehaviour
         OldTerrain.terrainData.SetHeights(0, 0, heights);
     }
 
-    [ContextMenu("Smooth Terrain by x=sqrt(x)")]
+    [ContextMenu("Terrain by x=sqrt(x)")]
+    void SmoothSqrt()
+    {
+        float[,] heights = new float[lenght, width];
+        for (int i = 0; i < lenght; i++)
+            for (int j = 0; j < width; j++)
+                heights[i, j] = generatedHeights[i, j];
+
+        for (int i = 0; i < smoothSteps; i++)
+        {
+            heights = TerrainSmoother.SqrtSmoothing(heights, lenght);
+        }
+        OldTerrain.terrainData.SetHeights(0, 0, heights);
+    }
+
+    [ContextMenu("Smooth Terrain by x=x^2")]
     void SmoothSquare()
     {
         float[,] heights = new float[lenght, width];
@@ -114,10 +143,10 @@ public class TerrainGenerator : MonoBehaviour
 
     private void GenerateBorder(float[,] heights)
     {
-        heights[0, 0] = GetBorderValue();
-        heights[0, lenght - 1] = GetBorderValue();
-        heights[lenght - 1, 0] = GetBorderValue();
-        heights[lenght - 1, lenght - 1] = GetBorderValue();
+        heights[0, 0] = InitHeigtValues.GenerateRandomly ? Random.NextFloat(0, 1) : InitHeigtValues.LeftTopAngle;
+        heights[0, lenght - 1] = InitHeigtValues.GenerateRandomly ? Random.NextFloat(0, 1) : InitHeigtValues.RightTopAngle;
+        heights[lenght - 1, 0] = InitHeigtValues.GenerateRandomly ? Random.NextFloat(0, 1) : InitHeigtValues.LeftBottomAngle;
+        heights[lenght - 1, lenght - 1] = InitHeigtValues.GenerateRandomly ? Random.NextFloat(0, 1) : InitHeigtValues.RightBottomAngle;
     }
 
     // Выполнение шага Diamond алгоритма для всей карты
@@ -161,36 +190,34 @@ public class TerrainGenerator : MonoBehaviour
         SetHeight(sum, length, centerX, centerY, heights);
     }
 
-    //// В зависимости от настроек, возвращаем либо константу
-    //// либо случайное число
-    private float GetBorderValue()
-    {
-        if (isRandomBorder)
-            return Random.NextFloat(0, 1);
-        return defaultBorderValue / (float)height;
-    }
-
     // Шаг Diamond для конкретной точки.
     // Определение высоты средней точки в получившихся
     // на шаге Square ромбах
     public void DiamondStep(int centerX, int centerY, int length, float[,] heights)
     {
-        //float left = 0, right = 0, top = 0, bottom = 0;
+        float left = 0, right = 0, top = 0, bottom = 0;
         //// Получаем начальные значения высоты на граничных точках
-        var left = GetBorderValue();
-        var right = GetBorderValue();
-        var top = GetBorderValue();
-        var bottom = GetBorderValue();
+        //var left = GetBorderValue();
+        //var right = GetBorderValue();
+        //var top = GetBorderValue();
+        //var bottom = GetBorderValue();
 
         // Если точки не выходят за границы массива, берем их высоту из карты
         if (centerX - length >= 0)
             left = heights[centerX - length, centerY];
+        else left = InitHeigtValues.IsCustomBorder? InitHeigtValues.DefaultBorderValue / height : heights[centerX + length, centerY];
+
         if (centerX + length < lenght)
             right = heights[centerX + length, centerY];
+        else right = InitHeigtValues.IsCustomBorder ? InitHeigtValues.DefaultBorderValue / height : heights[centerX - length, centerY];
+
         if (centerY - length >= 0)
             bottom = heights[centerX, centerY - length];
+        else bottom = InitHeigtValues.IsCustomBorder ? InitHeigtValues.DefaultBorderValue / height : heights[centerX, centerY + length];
+
         if (centerY + length < lenght)
             top = heights[centerX, centerY + length];
+        else top = InitHeigtValues.IsCustomBorder ? InitHeigtValues.DefaultBorderValue / height : heights[centerX, centerY - length];
 
         // Определяем высоту средней точки
         var sum = left + right + top + bottom;
