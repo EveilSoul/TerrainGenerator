@@ -84,6 +84,7 @@ public class TerrainSmoother
                 heights[i, j] = Mathf.Sqrt(heights[i, j]);
         return heights;
     }
+
     public static float[,] SquareSmoothing(float[,] heights, int lenght)
     {
         for (int i = 0; i < lenght; i++)
