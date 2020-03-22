@@ -16,11 +16,13 @@ public class TerrainGenerator : MonoBehaviour
 
     public int Width;
     public int Height;
+    [SerializeField] private uint seed;
+    [SerializeField] private float perlinIntensity;
+    [SerializeField] private float perlinScale;
 
     [Range(0, 6)]
-    [Tooltip("how many times will be applied some method (e.g smoothing)")]
+    [Tooltip("how many times will be applied some method (e.g smoothing, not perlin)")]
     [SerializeField] private int ApplyingMethodCount;
-    [SerializeField] private uint seed;
 
     public InitedHeightValues InitHeigtValues;
 
@@ -72,16 +74,30 @@ public class TerrainGenerator : MonoBehaviour
     [ContextMenu("Smooth Terrain by x=x^2")]
     void SmoothSquare() => ApplySmoothing(TerrainSmoother.SquareSmoothing);
 
+    [ContextMenu("Apply additive perlin")]
+    void ApplyAdditivePerlin() =>
+        CurrentTerrainForGeneration.terrainData.SetHeights(0, 0, PerlinNoise.AddPerlin(GetNewHeigtsArray(), Width, perlinIntensity, perlinScale));
+
+    [ContextMenu("Apply substractive perlin")]
+    void ApplySubstractivePerlin() =>
+        CurrentTerrainForGeneration.terrainData.SetHeights(0, 0, PerlinNoise.AddPerlin(GetNewHeigtsArray(), Width, perlinIntensity,perlinScale, true));
+
     private void ApplySmoothing(Func<float[,], int, float[,]> smoothMethod)
+    {
+        float[,] heights = GetNewHeigtsArray();
+        for (int i = 0; i < ApplyingMethodCount; i++)
+            heights = smoothMethod(heights, Width);
+
+        CurrentTerrainForGeneration.terrainData.SetHeights(0, 0, heights);
+    }
+
+    private float[,] GetNewHeigtsArray()
     {
         float[,] heights = new float[Width, Width];
         for (int i = 0; i < Width; i++)
             for (int j = 0; j < Width; j++)
                 heights[i, j] = generatedHeights[i, j];
-        for (int i = 0; i < ApplyingMethodCount; i++)
-            heights = smoothMethod(heights, Width);
-
-        CurrentTerrainForGeneration.terrainData.SetHeights(0, 0, heights);
+        return heights;
     }
 
     public void InstantiateTerrain()
@@ -95,7 +111,6 @@ public class TerrainGenerator : MonoBehaviour
 
         terrainData.heightmapResolution = Width;
         terrainData.size = new Vector3(Width, Height, Width);
-        Debug.Log(new Vector3(Width, Height, Width));
 
         float[,] heights = new float[Width, Width];
         terrain.materialTemplate = DefaultMaterial;
