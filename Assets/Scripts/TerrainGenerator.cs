@@ -5,20 +5,27 @@ using UnityEngine;
 using Unity.Mathematics;
 using UnityEditor;
 
+[RequireComponent(typeof(ColorGenerator))]
 public class TerrainGenerator : MonoBehaviour
 {
     #region BaseFields
     public Vector3 TerrainPosition;
-    public Material DefaultMaterial;
+    
     public float Roughness;
 
-    public Terrain CurrentTerrainForGeneration;
+    public Terrain CurrentTerrainForGeneration { get; private set; }
 
     public int Width;
     public int Height;
     [SerializeField] private uint seed;
     [SerializeField] private float perlinIntensity;
     [SerializeField] private float perlinScale;
+
+    public float MinHeight { get; private set; }
+    public float MaxHeight { get; private set; }
+    public Material DefaultMaterial;
+    public Material SovsemDefaultMaterial;
+    private ColorGenerator colorGenerator;
 
     [Range(0, 6)]
     [Tooltip("how many times will be applied some method (e.g smoothing, not perlin)")]
@@ -28,6 +35,8 @@ public class TerrainGenerator : MonoBehaviour
 
     public static Unity.Mathematics.Random Random;
     private float[,] generatedHeights;
+
+    
 
     [Serializable]
     public struct InitedHeightValues
@@ -54,16 +63,56 @@ public class TerrainGenerator : MonoBehaviour
     }
     #endregion
 
+    private void Start()
+    {
+        colorGenerator = gameObject.GetComponent<ColorGenerator>();
+        generatedHeights = CurrentTerrainForGeneration.terrainData.GetHeights(0, 0, Width, Width);
+        UpdateMinMaxHeights(generatedHeights);
+        colorGenerator.Generate();
+    }
+
     public void Generate()
     {
         Random.InitState(seed);
         //var terrain = InstantiateTerrain();
         var terrain = CurrentTerrainForGeneration;
         terrain.terrainData = DiamondSquare.GenerateTerrain(terrain.terrainData, this);
-        generatedHeights = terrain.terrainData.GetHeights(0, 0, Width, Width);
+        //generatedHeights = terrain.terrainData.GetHeights(0, 0, Width, Width);
+        Save();
+
+        //UpdateMinMaxHeights(generatedHeights);
+        //colorGenerator.selectedTextureData.UpdateMeshHeights(DefaultMaterial, MinHeight, MaxHeight);
+        //colorGenerator.textureData.ApplyToMaterial(DefaultMaterial);
+        //terrain.terrainData.SetHeights(0, 0, generatedHeights);
     }
 
-    public void Save() => generatedHeights = CurrentTerrainForGeneration.terrainData.GetHeights(0, 0, Width, Width);
+    public void GenerateColors()
+    {
+        if (colorGenerator == null)
+            colorGenerator = GetComponent<ColorGenerator>();
+        colorGenerator.Generate();
+    }
+
+    public void GenerateGrass()
+    {
+        if (colorGenerator == null)
+            colorGenerator = GetComponent<ColorGenerator>();
+        colorGenerator.GenerateGrass();
+    }
+
+    public void GenerateTrees()
+    {
+        if (colorGenerator == null)
+            colorGenerator = GetComponent<ColorGenerator>();
+        colorGenerator.GenerateTreesAndStones();
+    }
+
+
+    public void Save()
+    {
+        generatedHeights = CurrentTerrainForGeneration.terrainData.GetHeights(0, 0, Width, Width);
+        UpdateMinMaxHeights(generatedHeights);
+    }
 
     [ContextMenu("Smooth Terrain by Median")]
     void SmoothMedian() => ApplySmoothing(TerrainSmoother.SmoothTerrainMedian);
@@ -89,6 +138,30 @@ public class TerrainGenerator : MonoBehaviour
             heights = smoothMethod(heights, Width);
 
         CurrentTerrainForGeneration.terrainData.SetHeights(0, 0, heights);
+
+        UpdateMinMaxHeights(heights);
+        //colorGenerator.selectedTextureData.UpdateMeshHeights(DefaultMaterial, MinHeight, MaxHeight);
+        //colorGenerator.textureData.ApplyToMaterial(DefaultMaterial);
+    }
+
+    private void UpdateMinMaxHeights(float[,] heights)
+    {
+        float min = float.MaxValue;
+        float max = float.MinValue;
+
+        for(int i = 0; i < Width; i++)
+        {
+            for(int j = 0; j < Height; j++)
+            {
+                if (heights[i, j] < min)
+                    min = heights[i, j];
+                if (heights[i, j] > max)
+                    max = heights[i, j];
+            }
+        }
+
+        MinHeight = min*Height;
+        MaxHeight = max*Height;
     }
 
     private float[,] GetNewHeigtsArray()
@@ -102,6 +175,8 @@ public class TerrainGenerator : MonoBehaviour
 
     public void InstantiateTerrain()
     {
+        colorGenerator = GetComponent<ColorGenerator>();
+        colorGenerator.Initialize();
         GameObject terrainObject = new GameObject("Terrain " + DateTime.Now);
         terrainObject.transform.position = TerrainPosition;
         Terrain terrain = terrainObject.AddComponent<Terrain>();
@@ -113,11 +188,26 @@ public class TerrainGenerator : MonoBehaviour
         terrainData.size = new Vector3(Width, Height, Width);
 
         float[,] heights = new float[Width, Width];
-        terrain.materialTemplate = DefaultMaterial;
+        terrain.materialTemplate = SovsemDefaultMaterial;
 
         collider.terrainData = terrainData;
         terrain.terrainData = terrainData;
 
         CurrentTerrainForGeneration = terrain;
     }
+
+    //void OnValidate()
+    //{
+    //    if (textureData != null)
+    //    {
+    //        textureData.OnValuesUpdated -= OnTextureValuesUpdated;
+    //        textureData.OnValuesUpdated += OnTextureValuesUpdated;
+    //    }
+
+    //}
+
+    //void OnTextureValuesUpdated()
+    //{
+    //    textureData.ApplyToMaterial(DefaultMaterial);
+    //}
 }

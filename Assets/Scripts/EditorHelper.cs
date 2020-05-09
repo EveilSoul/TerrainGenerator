@@ -21,9 +21,28 @@ public class EditorHelper : Editor
             generator.Generate();
         }
 
-        if(GUILayout.Button("Save current terrain"))
+        if (GUILayout.Button("Generate colors"))
+        {
+            generator.GenerateColors();
+        }
+
+        if (GUILayout.Button("Generate grass"))
+        {
+            generator.GenerateGrass();
+        }
+
+        if (GUILayout.Button("Generate trees"))
+        {
+            generator.GenerateTrees();
+        }
+
+        if (GUILayout.Button("Save current terrain"))
         {
             generator.Save();
         }
     }
 }
+
+
+
+

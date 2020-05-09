@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c5baa7f974af7044bdd46d70501f786, type: 3}
+  m_Name: Forest
+  m_EditorClassIdentifier: 
+  autoUpdate: 0
+  Type: 0
+  layers:
+  - texture: {fileID: 2800000, guid: c418797b4e738fb4c81c86090900e0f9, type: 3}
+    tint: {r: 0, g: 0, b: 0, a: 0}
+    tintStrength: 0
+    startHeight: 0
+    blendStrength: 0
+    textureScale: 1
+  - texture: {fileID: 2800000, guid: 0d763ddb9a90aa245bf56fbcddc7c087, type: 3}
+    tint: {r: 0, g: 0, b: 0, a: 0}
+    tintStrength: 0
+    startHeight: 0.175
+    blendStrength: 0.56
+    textureScale: 1
+  - texture: {fileID: 2800000, guid: 53475191c5681fc498c2f00cafe606d2, type: 3}
+    tint: {r: 0, g: 0, b: 0, a: 0}
+    tintStrength: 0
+    startHeight: 0.532
+    blendStrength: 0.259
+    textureScale: 1
+  - texture: {fileID: 2800000, guid: 0a369fe197e761a479d2b4f286599b4b, type: 3}
+    tint: {r: 0, g: 0, b: 0, a: 0}
+    tintStrength: 0
+    startHeight: 0.753
+    blendStrength: 0.259
+    textureScale: 1
