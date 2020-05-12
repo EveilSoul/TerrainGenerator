@@ -77,7 +77,7 @@ Material:
     - _UVSec: 0
     - _ZWrite: 1
     - maxHeight: 46.75853
-    - minHeight: 6.29173
+    - minHeight: 6.292331
     - testScale: 1
     m_Colors:
     - _Color: {r: 0.7169812, g: 0.7169812, b: 0.7169812, a: 1}

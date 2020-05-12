@@ -18,6 +18,7 @@ public class ColorGenerator : MonoBehaviour
     private const int MinGrassIntensity = 0;
 
     public BiomeType CurrentBiome;
+    [Tooltip("True дает возможность менять биом")]
     public bool CustomBiome;
     public Layer[] BiomeLayers;
     [Range(MinGrassIntensity + 1, MaxGrassIntensity)]
@@ -130,11 +131,10 @@ public class ColorGenerator : MonoBehaviour
             {
                 for (int j = 0; j < width; j++)
                 {
-                    // Sample the height at this location (note GetHeight expects int coordinates corresponding to locations in the heightmap array)
                     float height = terrainGenerator.CurrentTerrainForGeneration.terrainData.GetHeight(j / k, i / k);
                     if (height >= Grass[g].minPlaceHeight && height < Grass[g].maxPlaceHeight)
                     {
-                        if (UnityEngine.Random.Range((float)MinGrassIntensity, MaxGrassIntensity) <= (GrassIntensity * 0.2f))
+                        if (UnityEngine.Random.Range((float)MinGrassIntensity, MaxGrassIntensity) <= (GrassIntensity))
                             newMap[i, j] = Grass[g].intensity;
                     }
                     else
@@ -170,14 +170,20 @@ public struct Grass
 {
     public Texture2D texture;
     [Range(0, 1)]
+    [Tooltip("Минимальная высота размещения")]
     public float minPlaceHeight;
     [Range(0, 1)]
+    [Tooltip("Максимальная высота размещения")]
     public float maxPlaceHeight;
     [Range(1, 10)]
     public int intensity;
+    [Tooltip("Минимальная высота травы")]
     public float minSizeHeight;
+    [Tooltip("Максимальная высота травы")]
     public float maxSizeHeight;
+    [Tooltip("Минимальная ширина травы")]
     public float minSizeWidth;
+    [Tooltip("Максимальная ширина травы")]
     public float maxSizeWidth;
 }
 
@@ -186,8 +192,10 @@ public struct Tree
 {
     public GameObject prefab;
     [Range(0, 1)]
+    [Tooltip("Минимальная высота размещения")]
     public float minHeight;
     [Range(0, 1)]
+    [Tooltip("Максимальная высота размещения")]
     public float maxHeight;
     [Range(1, 10)]
     public int intensity;

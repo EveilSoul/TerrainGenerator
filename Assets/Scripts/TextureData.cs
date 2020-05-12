@@ -55,12 +55,14 @@ public class TextureData : UpdatableData
 public struct Layer
 {
     public Texture2D texture;
+    [Tooltip("Дополнительный цвет накладываемый на текстуру")]
     public Color tint;
     [Range(0, 1)]
     public float tintStrength;
     [Range(0, 1)]
     public float startHeight;
     [Range(0, 1)]
+    [Tooltip("Смешивание между текущим слоем и следующим")]
     public float blendStrength;
     public float textureScale;
 }

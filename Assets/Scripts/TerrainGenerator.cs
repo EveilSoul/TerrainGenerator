@@ -28,7 +28,7 @@ public class TerrainGenerator : MonoBehaviour
     private ColorGenerator colorGenerator;
 
     [Range(0, 6)]
-    [Tooltip("how many times will be applied some method (e.g smoothing, not perlin)")]
+    [Tooltip("Сколько раз будет применен какой лмбо метод (e.g smoothing, not perlin)")]
     [SerializeField] private int ApplyingMethodCount;
 
     public InitedHeightValues InitHeigtValues;
@@ -74,16 +74,9 @@ public class TerrainGenerator : MonoBehaviour
     public void Generate()
     {
         Random.InitState(seed);
-        //var terrain = InstantiateTerrain();
         var terrain = CurrentTerrainForGeneration;
         terrain.terrainData = DiamondSquare.GenerateTerrain(terrain.terrainData, this);
-        //generatedHeights = terrain.terrainData.GetHeights(0, 0, Width, Width);
         Save();
-
-        //UpdateMinMaxHeights(generatedHeights);
-        //colorGenerator.selectedTextureData.UpdateMeshHeights(DefaultMaterial, MinHeight, MaxHeight);
-        //colorGenerator.textureData.ApplyToMaterial(DefaultMaterial);
-        //terrain.terrainData.SetHeights(0, 0, generatedHeights);
     }
 
     public void GenerateColors()
@@ -140,8 +133,6 @@ public class TerrainGenerator : MonoBehaviour
         CurrentTerrainForGeneration.terrainData.SetHeights(0, 0, heights);
 
         UpdateMinMaxHeights(heights);
-        //colorGenerator.selectedTextureData.UpdateMeshHeights(DefaultMaterial, MinHeight, MaxHeight);
-        //colorGenerator.textureData.ApplyToMaterial(DefaultMaterial);
     }
 
     private void UpdateMinMaxHeights(float[,] heights)
@@ -195,19 +186,4 @@ public class TerrainGenerator : MonoBehaviour
 
         CurrentTerrainForGeneration = terrain;
     }
-
-    //void OnValidate()
-    //{
-    //    if (textureData != null)
-    //    {
-    //        textureData.OnValuesUpdated -= OnTextureValuesUpdated;
-    //        textureData.OnValuesUpdated += OnTextureValuesUpdated;
-    //    }
-
-    //}
-
-    //void OnTextureValuesUpdated()
-    //{
-    //    textureData.ApplyToMaterial(DefaultMaterial);
-    //}
 }
